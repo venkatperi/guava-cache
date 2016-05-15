@@ -3,24 +3,24 @@ assert = require("assert")
 path = require 'path'
 fs = require 'fs'
 _ = require 'lodash'
-Cache = require '../index'
+cache = require '../index'
 ntimer = require 'ntimer'
 
 describe "Cache", ->
 
   it "set expiry", ( done ) ->
-    cache = new Cache expiry : '1m'
-    cache.expiry().should.equal 1000 * 60
+    cache expiry : '1m'
+    .expiry().should.equal 1000 * 60
     done()
 
   it "insert item", ( done ) ->
-    cache = new Cache()
-    cache.set 'foo', 'bar'
-    cache.get('foo').should.equal 'bar'
+    cache()
+    .set 'foo', 'bar'
+    .get('foo').should.equal 'bar'
     done()
 
   it "emits 'set' on insert", ( done ) ->
-    new Cache()
+    cache()
     .on 'set', ( k, v ) ->
       k.should.equal 'foo'
       v.should.equal 'bar'
@@ -29,7 +29,7 @@ describe "Cache", ->
 
   it "global loader (function)", ( done ) ->
     loader = ( k ) -> 'bar'
-    new Cache()
+    cache()
     .loader loader
     .on 'set', ( k, v ) ->
       k.should.equal 'foo'
@@ -40,7 +40,7 @@ describe "Cache", ->
   it "global loader (object)", ( done ) ->
     loader =
       load : ( k ) -> 'bar'
-    new Cache()
+    cache()
     .loader loader
     .on 'set', ( k, v ) ->
       k.should.equal 'foo'
@@ -50,7 +50,7 @@ describe "Cache", ->
 
   it "local loader", ( done ) ->
     loader = -> 'bar'
-    new Cache()
+    cache()
     .on 'set', ( k, v ) ->
       k.should.equal 'foo'
       v.should.equal 'bar'
@@ -59,40 +59,41 @@ describe "Cache", ->
 
   it "evict by size", ( done ) ->
     evictionCount = 0
-    cache = new Cache maxSize : 2
+    c = cache maxSize : 2
     .on 'delete', ( k, v, reason ) ->
       reason.should.equal 'size'
       k = Number k
       k.should.equal evictionCount++
       done() if k is 2
-    cache.set i, i for i in [ 0..4 ]
+
+    c.set i, i for i in [ 0..4 ]
 
   it "evict by time", ( done ) ->
     d = false
-    cache = new Cache expiry : '3s'
+    c = cache expiry : '3s'
     .on 'delete', ( k, v, reason ) ->
       reason.should.equal 'expiry'
       unless d
         done()
         d = true
     ntimer.autoRepeat 'insert', '1s', 10
-    .on 'timer', ( n, i ) -> cache.set i, i
+    .on 'timer', ( n, i ) -> c.set i, i
 
   it "stats - evict by size", ( done ) ->
-    cache = new Cache expiry : '10s', maxSize : 3
+    c = cache expiry : '10s', maxSize : 3
     count = 100
     for i in [ 1..count ]
-      cache.set i, i
+      c.set i, i
 
     for i in [ 1..count*1000 ]
-      cache.get Math.floor(Math.random() * count * 2)
+      c.get Math.floor(Math.random() * count * 2)
 
-    console.log cache.stats()
+    console.log JSON.stringify c.stats(), null, 2
     done()
 
 ###
   it "stats - evict by time", ( done ) ->
-    cache = new Cache expiry : '10s', maxSize : 3
+    cache = cache expiry : '10s', maxSize : 3
     count = 100
     ntimer.autoRepeat 'set', 10, 8
     .on 'timer', ( n, i ) -> cache.set i, i

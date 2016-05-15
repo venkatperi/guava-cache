@@ -3,6 +3,83 @@
 
 [![Build Status](https://travis-ci.org/venkatperi/gauva-cache.svg?branch=master)](https://travis-ci.org/venkatperi/gauva-cache)
 
+## Installation
+
+Install with npm:
+
+```shell
+npm install guava-cache --save
+```
+
+## Examples
+
+### Create Cache
+
+```coffeescript
+guavaCache = require 'guava-cache'
+
+# 6 hour eviction, 500 items limit
+cache = guavaCache expiry: '6h', maxItems: 500
+```
+
+### Global Loader
+
+```coffeescript
+loader = (key) ->
+  return 'bar' if key is 'foo' 
+  throw new Error 'key not found'
+  
+cache = guavaCache().loader(loader)
+cache.get 'foo'
+# => 'bar'
+cache.get 'abc'
+# => undefined
+```
+
+### Local Loader
+```coffeescript
+loader = (key) ->
+  return 'bar' if key is 'foo' 
+  throw new Error 'key not found'
+  
+cache = guavaCache()
+cache.get 'foo', loader
+# => 'bar'
+cache.get 'abc'
+# => undefined
+```
+### Removal Listener
+
+```coffeescript
+cache.on "delete", (key, value, reason) ->
+  value.close() # do something with value 
+# => reason: 'expiry'
+# => reason: 'size'
+# => reason: 'explicit'
+```
+
+### Stats
+
+```coffeescript
+
+cache.stats()
+###
+{
+  "hits": 49897,
+  "misses": 50103,
+  "evictions": 0,
+  "rates": {
+    "hit": 0.49897,
+    "miss": 0.50103,
+    "loadOk": 1,
+    "loadErr": 0
+  }
+}
+###
+```
+
+
+
 ## Applicability
 
 Caches are tremendously useful in a wide variety of use cases. For example, you should consider using caches when a value is expensive to compute or retrieve, and you will need its value on a certain input more than once.
@@ -64,29 +141,23 @@ At any time, you may explicitly invalidate cache entries rather than waiting for
 * in bulk, using `cache.deleteAll(keys…)`
 * all entries, using `cache.deleteAll()`
 
-## Events
-
-`guava-cache` emits the following events:
-
-### on("set", key, value)
-
-Emitted for each **key**,**value** insertion.
-
-### on("delete", key, value, reason)
-
-Emitted when keys are removed. Reason `{String}` can be any of:
-
-* `size` for size based evictions
-* `expiry` for time based eviction
-* `explicit` for user / explicit removals.
-
 ## Cleanup
 
-Cleanup occurs as an async operation after read or write operations. You may call `cache.cleanup()` for explicit cleanup.
+Cleanup occurs as an async operation after write operations or on a limited basis after read operations. You may call `cache.cleanup()` for explicit 
+
+```coffeescript
+cache.cleanup()	# async operation
+```
 
 ## Refresh
 
 Refreshing a key loads a new value for the key (by calling `cache.refresh(key)`). This is an async opertion. The old value (if any) is returned while the key is being refreshed. This is in contrast to eviction, which forces retrievals to wait until the value is loaded anew.
+
+```coffeescript
+cache.refresh(key)	# async operation
+```
+
+
 
 # API
 
@@ -132,6 +203,22 @@ Returns the value associated to the key if the key exists in the cache and has n
 ### set(key, value)
 
 Sets the value for the key in the `cache`. Returns the `cache` object for chaining. Emits a `set` event.
+
+## Events
+
+`guava-cache` emits the following events:
+
+### on("set", key, value)
+
+Emitted for each **key**,**value** insertion.
+
+### on("delete", key, value, reason)
+
+Emitted when keys are removed. Reason `{String}` can be any of:
+
+- `size` for size based evictions
+- `expiry` for time based eviction
+- `explicit` for user / explicit removals.
 
 
 
