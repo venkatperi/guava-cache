@@ -8,11 +8,11 @@
   "preferGlobal": false,
   "description": "A google guava like cache for nodejs",
   "dependencies": {
+    "flatten": "^1.0.2",
     "millisecond": "^0.1.2",
     "moment": "^2.13.0",
-    "node-cache": "^3.2.1",
-    "ntimer": "^0.5.3",
-    "prop-it": "^0.2.1"
+    "prop-it": "^0.2.1",
+    "seqx": "^1.0.2"
   },
   "bundleDependencies": [],
   "main": "dist/index",

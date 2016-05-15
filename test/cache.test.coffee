@@ -27,7 +27,7 @@ describe "Cache", ->
       done()
     .set 'foo', 'bar'
 
-  it "get with loader", ( done ) ->
+  it "global loader (function)", ( done ) ->
     loader = ( k ) -> 'bar'
     new Cache()
     .loader loader
@@ -37,7 +37,18 @@ describe "Cache", ->
       done()
     .get('foo').should.equal 'bar'
 
-  it "get with property loader", ( done ) ->
+  it "global loader (object)", ( done ) ->
+    loader =
+      load : ( k ) -> 'bar'
+    new Cache()
+    .loader loader
+    .on 'set', ( k, v ) ->
+      k.should.equal 'foo'
+      v.should.equal 'bar'
+      done()
+    .get('foo').should.equal 'bar'
+
+  it "local loader", ( done ) ->
     loader = -> 'bar'
     new Cache()
     .on 'set', ( k, v ) ->
@@ -48,32 +59,49 @@ describe "Cache", ->
 
   it "evict by size", ( done ) ->
     evictionCount = 0
-    cache = new Cache maxSize : 2, timer : '1s'
-    .on 'delete', ( k, reason ) ->
-      reason.should.equal 'maximum size exceeded'
+    cache = new Cache maxSize : 2
+    .on 'delete', ( k, v, reason ) ->
+      reason.should.equal 'size'
       k = Number k
       k.should.equal evictionCount++
       done() if k is 2
     cache.set i, i for i in [ 0..4 ]
 
   it "evict by time", ( done ) ->
-    cache = new Cache expiry : '3s', timer : '1s'
-    .on 'delete', ( k, reason ) ->
-      reason.should.equal 'expired'
-      k.should.equal 'foo'
-      done()
-    .set 'foo', 'bar'
+    d = false
+    cache = new Cache expiry : '3s'
+    .on 'delete', ( k, v, reason ) ->
+      reason.should.equal 'expiry'
+      unless d
+        done()
+        d = true
+    ntimer.autoRepeat 'insert', '1s', 10
+    .on 'timer', ( n, i ) -> cache.set i, i
 
-  it "stats", ( done ) ->
-    cache = new Cache expiry : '10s', timer : 500, maxSize : 3
-    ntimer.autoRepeat 'set', '1s', 4
+  it "stats - evict by size", ( done ) ->
+    cache = new Cache expiry : '10s', maxSize : 3
+    count = 100
+    for i in [ 1..count ]
+      cache.set i, i
+
+    for i in [ 1..count*1000 ]
+      cache.get Math.floor(Math.random() * count * 2)
+
+    console.log cache.stats()
+    done()
+
+###
+  it "stats - evict by time", ( done ) ->
+    cache = new Cache expiry : '10s', maxSize : 3
+    count = 100
+    ntimer.autoRepeat 'set', 10, 8
     .on 'timer', ( n, i ) -> cache.set i, i
     .on 'done', ->
-      ntimer.autoRepeat 'get', '1s', 4
+      ntimer.autoRepeat 'get', 10, 8
       .on 'timer', ( n, i ) ->
-        cache.get Math.floor(Math.random() * 16)
+        cache.get i
       .on 'done', ->
         console.log cache.stats()
         done()
-      
 
+###

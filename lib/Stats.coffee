@@ -11,30 +11,30 @@ module.exports = class Stats
   miss : => @missCount++
   evict : => @evictionCount++
   loadOk : => @loadSuccessCount++
-  loadError : => @loadSuccessCount++
+  loadError : => @loadErrorCount++
 
   requestCount : => @hitCount + @missCount
-
   loadCount : => @loadSuccessCount + @loadErrorCount
 
-  hitRate : =>
-    requestCount = @requestCount()
-    return 1 if requestCount is 0
-    @hitCount / requestCount
+  _computeRates : =>
+    rates= {}
+    [rates.hit, rates.miss] =
+      @_rates @hitCount, @missCount, @requestCount()
+    [rates.loadOk, rates.loadErr] =
+      @_rates @loadSuccessCount, @loadErrorCount, @loadCount()
+    rates
 
-  missRate : =>
-    requestCount = @requestCount()
-    return 0 if requestCount is 0
-    @missCount / requestCount
+  _rates : ( ok, err, total ) ->
+    return [ 1, 0 ] if total is 0
+    [ ok / total, err / total ]
 
   toObject : =>
+    @_computeRates()
     hits : @hitCount
     misses : @missCount
     evictions : @evictionCount
-    hitRate : @hitRate()
-    missRate : @missRate()
-    loads : @loadCount()
-
+    rates : @_computeRates()
+   
   toString : =>
     x = @toObject()
     ("#{k}: #{v}" for own k,v of x).join ", "
