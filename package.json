@@ -40,17 +40,15 @@
   "author": "Venkat Peri <venkatperi@gmail.com> (http://www.vperi.com/)",
   "license": "MIT",
   "keywords": [
-    "clock",
-    "finite",
-    "fsm",
-    "input",
-    "machine",
-    "moore",
+    "cache",
+    "evict",
+    "expiry",
+    "google",
+    "guava",
+    "loading",
+    "local",
+    "memory",
     "nodejs",
-    "output",
-    "signal",
-    "state",
-    "steady",
-    "transition"
+    "size"
   ]
 }
