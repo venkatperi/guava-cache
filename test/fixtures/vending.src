@@ -1,0 +1,18 @@
+transitions {
+  0, 20  -> 5  : nickle;
+  0, 20  -> 10 : dime;    //test
+  5, 25  -> 10 : nickle;
+  5, 25,4  -> 15 : dime;
+  5, 25  -> 15 : dime;
+  10     -> 15 : nickle;
+  10     -> 20 : dime;
+  15     -> 20 : nickle;
+  15     -> 25 : dime, !abc;
+}
+
+outputs {
+  ^5,25  :  !abc, light5;
+  ^10    :  light10;
+  ^15    :  light15;
+  ^20,25 :  !abc, def, lightCandy;
+}

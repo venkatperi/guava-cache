@@ -1,0 +1,4 @@
+Gruntfile.coffee
+lib/
+test/
+.coveralls.yml

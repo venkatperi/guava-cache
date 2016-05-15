@@ -1,0 +1,56 @@
+{
+  "name": "guava-cache",
+  "version": "0.5.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/venkatperi/guava-cache.git"
+  },
+  "preferGlobal": false,
+  "description": "A google guava like cache for nodejs",
+  "dependencies": {
+    "millisecond": "^0.1.2",
+    "moment": "^2.13.0",
+    "node-cache": "^3.2.1",
+    "ntimer": "^0.5.3",
+    "prop-it": "^0.2.1"
+  },
+  "bundleDependencies": [],
+  "main": "dist/index",
+  "scripts": {
+    "prepublish": "grunt",
+    "test": "mocha && istanbul report text-summary lcov && rm -rf ./coverage"
+  },
+  "devDependencies": {
+    "coffee-coverage": "^1.0.1",
+    "grunt": "^0.4.5",
+    "grunt-coffeelint": "0.0.15",
+    "grunt-contrib-clean": "^1.0.0",
+    "grunt-contrib-coffee": "^1.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-exec": "^0.4.6",
+    "grunt-istanbul": "^0.7.0",
+    "grunt-mkdir": "^1.0.0",
+    "jison": "^0.4.17",
+    "lodash": "^4.12.0",
+    "merge": "^1.2.0",
+    "ntimer": "^0.5.3",
+    "should": "^8.3.1"
+  },
+  "author": "Venkat Peri <venkatperi@gmail.com> (http://www.vperi.com/)",
+  "license": "MIT",
+  "keywords": [
+    "clock",
+    "finite",
+    "fsm",
+    "input",
+    "machine",
+    "moore",
+    "nodejs",
+    "output",
+    "signal",
+    "state",
+    "steady",
+    "transition"
+  ]
+}
