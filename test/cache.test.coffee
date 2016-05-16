@@ -76,8 +76,10 @@ describe "Cache", ->
       unless d
         done()
         d = true
-    ntimer.autoRepeat 'insert', '1s', 10
-    .on 'timer', ( n, i ) -> c.set i, i
+    .set 'foo', 'bar'
+    
+    ntimer.autoRepeat 'get', '1s', 10
+    .on 'timer', ( n, i ) -> c.get 'foo'
 
   it "stats - evict by size", ( done ) ->
     c = cache expiry : '10s', maxSize : 3

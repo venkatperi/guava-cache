@@ -53,14 +53,15 @@ module.exports = class LoadingCache extends EventEmitter
         @_stats.hit()
         v.meta.use()
         return v.data
+      @_remove k, 'expiry'
 
     @_stats.miss()
     @_refresh k, loader
 
   set : ( k, v ) =>
     @_cache.set k, data : v, meta : new Meta()
+    @_ex.add @_evictBySize()
     @emit "set", k, v
-    @_postWrite()
     @
 
   _keys : => @_findFirstWith -> true
@@ -109,6 +110,4 @@ module.exports = class LoadingCache extends EventEmitter
     @_cache.delete k
     @emit "delete", k, v, reason
     @
-
-  _postWrite : => @cleanup()
 

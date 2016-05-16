@@ -109,7 +109,7 @@ A cache loader can be set with the `cache.loader(myLoader)` function.
 
 The canonical way to query a `guava-cache` is with the method `cache.get(key)`. This will either return an already cached value, or else use the cache's `loader` to atomically load a new value into the cache. 
 
-> **Note:** A loader must throw an error is a key cannot be loaded and must not be inserted in the cache. Simply returning undefined for a non-existent key will cause the key to be inserted in to the cache.
+> **Note:** A loader must **throw** an error is a key **cannot be loaded** and must not be inserted in the cache. Simply returning undefined for a non-existent key will cause the key to be inserted in to the cache.
 
 ### Local Loader
 
@@ -143,10 +143,12 @@ At any time, you may explicitly invalidate cache entries rather than waiting for
 
 ## Cleanup
 
-Cleanup occurs as an async operation after write operations or on a limited basis after read operations. You may call `cache.cleanup()` for explicit 
+`guava-cache`does **not** perform cleanup and evict values "automatically," or instantly after a value expires, or anything of the sort. Instead, it performs small amounts of maintenance during write operations, or during occasional read operations if writes are rare.
+
+You may call `cache.cleanup()` for explicit cleanup or schedule a periodic cleanup:
 
 ```coffeescript
-cache.cleanup()	# async operation
+setInterval (-> cache.cleanup()), 3600000	#hourly cleanup
 ```
 
 ## Refresh
@@ -157,7 +159,9 @@ Refreshing a key loads a new value for the key (by calling `cache.refresh(key)`)
 cache.refresh(key)	# async operation
 ```
 
+## Statistics
 
+The `cache.stats()` method returns an object which provides statistics such as the hit rate, eviction count etc.
 
 # API
 
@@ -203,6 +207,15 @@ Returns the value associated to the key if the key exists in the cache and has n
 ### set(key, value)
 
 Sets the value for the key in the `cache`. Returns the `cache` object for chaining. Emits a `set` event.
+
+### stats()
+
+Returns a object with cache statistics, including:
+
+* number of hits & misses
+* number of evictions
+* hit / miss rate
+* load success / error rate
 
 ## Events
 
