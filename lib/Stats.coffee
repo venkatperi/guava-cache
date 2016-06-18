@@ -37,4 +37,4 @@ module.exports = class Stats
    
   toString : =>
     x = @toObject()
-    ("#{k}: #{v}" for own k,v of x).join ", "
+    ("#{k}: #{v}" for own k,v of x).join ', '

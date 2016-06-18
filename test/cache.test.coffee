@@ -27,6 +27,11 @@ describe "Cache", ->
       done()
     .set 'foo', 'bar'
 
+  it "emits 'error' on loader error", ( done ) ->
+    cache()
+    .on 'error', ( err ) -> done()
+    .get 'abc', -> throw new Error 'test'
+
   it "global loader (function)", ( done ) ->
     loader = ( k ) -> 'bar'
     cache()
@@ -68,7 +73,7 @@ describe "Cache", ->
 
     c.set i, i for i in [ 0..4 ]
 
-  it "evict by time", ( done ) ->
+  it 'evict by time', ( done ) ->
     d = false
     c = cache expiry : '3s'
     .on 'delete', ( k, v, reason ) ->
@@ -77,34 +82,19 @@ describe "Cache", ->
         done()
         d = true
     .set 'foo', 'bar'
-    
+
     ntimer.autoRepeat 'get', '1s', 10
     .on 'timer', ( n, i ) -> c.get 'foo'
 
-  it "stats - evict by size", ( done ) ->
+  it 'stats - evict by size', ( done ) ->
     c = cache expiry : '10s', maxSize : 3
     count = 100
     for i in [ 1..count ]
       c.set i, i
 
-    for i in [ 1..count*1000 ]
+    for i in [ 1..count * 1000 ]
       c.get Math.floor(Math.random() * count * 2)
 
     console.log JSON.stringify c.stats(), null, 2
     done()
 
-###
-  it "stats - evict by time", ( done ) ->
-    cache = cache expiry : '10s', maxSize : 3
-    count = 100
-    ntimer.autoRepeat 'set', 10, 8
-    .on 'timer', ( n, i ) -> cache.set i, i
-    .on 'done', ->
-      ntimer.autoRepeat 'get', 10, 8
-      .on 'timer', ( n, i ) ->
-        cache.get i
-      .on 'done', ->
-        console.log cache.stats()
-        done()
-
-###

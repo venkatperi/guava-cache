@@ -8,8 +8,7 @@ flatten = require 'flatten'
 
 class Meta
   constructor : ->
-    @_insertedAt = moment()
-    @_lastUsedAt = moment()
+    @_insertedAt = @_lastUsedAt = moment()
     @_useCount = 0
 
   diff : ( now ) => now.diff @_insertedAt
@@ -34,7 +33,7 @@ module.exports = class LoadingCache extends EventEmitter
 
   size : => @_cache.size
 
-  delete : ( k ) => @_remove k, "explicit"
+  delete : ( k ) -> @_remove k, 'explicit'
 
   deleteAll : ( keys... ) =>
     keys = flatten keys
@@ -53,6 +52,7 @@ module.exports = class LoadingCache extends EventEmitter
         @_stats.hit()
         v.meta.use()
         return v.data
+
       @_remove k, 'expiry'
 
     @_stats.miss()
@@ -60,8 +60,8 @@ module.exports = class LoadingCache extends EventEmitter
 
   set : ( k, v ) =>
     @_cache.set k, data : v, meta : new Meta()
+    @emit 'set', k, v
     @_ex.add @_evictBySize()
-    @emit "set", k, v
     @
 
   _keys : => @_findFirstWith -> true
@@ -76,6 +76,7 @@ module.exports = class LoadingCache extends EventEmitter
       return v
     catch err
       @_stats.loadError()
+      @emit 'error', err
 
   _evictBySize : =>
     return if @size() <= @maxSize()
@@ -83,12 +84,12 @@ module.exports = class LoadingCache extends EventEmitter
     iter = @_cache.keys()
     keys = (iter.next().value for i in [ 0..n - 1 ])
     for k in keys
-      @_remove k, "size"
+      @_remove k, 'size'
       @_stats.evict()
 
   _evictByTime : =>
     for k in @_findExpiredKeys moment()
-      @_remove k, "expiry"
+      @_remove k, 'expiry'
       @_stats.evict()
 
   _findExpiredKeys : ( now )=>
@@ -108,6 +109,6 @@ module.exports = class LoadingCache extends EventEmitter
     return unless @has k
     v = @_cache.get(k).data
     @_cache.delete k
-    @emit "delete", k, v, reason
+    @emit 'delete', k, v, reason
     @
 
